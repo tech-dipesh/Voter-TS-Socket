@@ -1,21 +1,34 @@
 import express  from "express";
-import cors from "cors"
+// import cors from "cors"
 import newServer from "http"
-import {Socket, io, socket} from "socket.io"
+import { Server} from "socket.io"
 
 const app=express()
-const socketServer=new newServer(app)
-const httpServer=socketServer.create(Socket)
+// const socketServer=new newServer(app)
+const httpServer=newServer.createServer(app)
+// const httpServer=socketServer.create(socket)
+// const cors= httpServer, {
+//   origin: "http://localhost:5173",
+//   credentials: true
+// })
+// app.use(cors())
 
-app.use(cors, httpServer, {
-  origin: "http://localhost:5173",
-  credentials: true
-})
+// const cors={
+//   origin: "http://localhost:5173",
+//   Credential: true
+// }
 
-io.on("connection", ()=>{
-  socket.emit("chat", "start the chat server");
+const io=new Server(httpServer, {cors: {origin: "http://localhost:5173", credentials: true }})
+io.on("connection", (socket)=>{
+  socket.emit("chat", "start the polling system successfully");
   console.log("server successfuly connected ");
+  // socket.on("")
+  
+  socket.on("disconnected", ()=>{
+    socket.emit("Successfully disconnected.")
+  })
 })
+
 
 const path=8000;
 httpServer.listen(path, ()=>console.log("server is listening to us"))
