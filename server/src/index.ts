@@ -19,41 +19,50 @@ const httpServer=newServer.createServer(app)
 //   Credential: true
 // }
 
-interface rightSide{
-  right:()=>void
-}
+// interface rightSide{
+//   rightOperation:()=>void
+// }
+
+let rightVotes: number=0;
+
 interface leftSide{
-  right:()=>void
+  leftOperation:()=>void
 }
+let rightOperation: number=0
+let leftOperation: number=0
+
 const io=new Server(httpServer, {cors: {origin: "http://localhost:5173", credentials: true }})
 io.on("connection", (socket)=>{
   socket.emit("chat", "start the polling system successfully");
   console.log("server successfuly connected ");
-  // socket.on("")
   
-  let rightOperation: number=0
-  let leftOperation: number=0
-  function rightI(rightOperation: rightSide){
+  // socket.on("")
+  socket.on("voteRight", ()=>{
     rightOperation+=1;
-    socket.on("rightI", rightOperation)
-  }
-  function rightD(side: rightSide){
+    io.emit("rightUpdate", rightVotes)
+  })
+
+  // function rightI(rightOperation: rightSide){
+  //   rightOperation+=1;
+  //   io.emit("rightI", rightOperation)
+  // }
+  function rightD(rightOperation: rightSide){
     if(rightOperation==0){
-      return throw new Error("You can't decrease less thajn 0")
+      throw new Error("You can't decrease less thajn 0")
     }
     rightOperation-=1;
     socket.on("rightD", rightOperation)
   }
-  function leftI(side: leftSide){
+  function leftI(leftOperation: leftSide){
     leftOperation+=1;
-    socket.on("leftI", rightOperation)
+    socket.on("leftI", leftOperation)
   }
-  function leftD(side: rightSide){
+  function leftD(leftOperation: leftSide){
     if(leftOperation==0){
-      return throw new Error("You can't decrease less than 0, on left side")
+      throw new Error("You can't decrease less than 0, on left side")
     }
     leftOperation-=1;
-    socket.on("leftD", rightOperation)
+    socket.on("leftD", leftOperation)
   }
 
   socket.on("disconnected", ()=>{
