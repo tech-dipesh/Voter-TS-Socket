@@ -1,5 +1,4 @@
-import { error } from "console";
-import express, { response }  from "express";
+import express  from "express";
 // import cors from "cors"
 import newServer from "http"
 import { Server} from "socket.io"
@@ -19,54 +18,41 @@ const httpServer=newServer.createServer(app)
 //   Credential: true
 // }
 
-// interface rightSide{
-//   rightOperation:()=>void
-// }
 
 let rightVotes: number=0;
+let leftVotes: number=0
 
-interface leftSide{
-  leftOperation:()=>void
-}
-let rightOperation: number=0
-let leftOperation: number=0
 
 const io=new Server(httpServer, {cors: {origin: "http://localhost:5173", credentials: true }})
 io.on("connection", (socket)=>{
   socket.emit("chat", "start the polling system successfully");
-  console.log("server successfuly connected ");
+  socket.emit("votes", {rightVotes, leftVotes})
+  console.log("server successfuly connected ", socket.id);
   
   // socket.on("")
-  socket.on("voteRight", ()=>{
-    rightOperation+=1;
-    io.emit("rightUpdate", rightVotes)
+  socket.on("rightIncreament", ()=>{
+    rightVotes++;
+    io.emit("votes", {rightVotes, leftVotes})
+
+    })
+ 
+  socket.on("rightDecreament", ()=>{
+    if(rightVotes> 0) rightVotes--;
+    io.emit("votes", {rightVotes, leftVotes})
   })
 
-  // function rightI(rightOperation: rightSide){
-  //   rightOperation+=1;
-  //   io.emit("rightI", rightOperation)
-  // }
-  function rightD(rightOperation: rightSide){
-    if(rightOperation==0){
-      throw new Error("You can't decrease less thajn 0")
-    }
-    rightOperation-=1;
-    socket.on("rightD", rightOperation)
-  }
-  function leftI(leftOperation: leftSide){
-    leftOperation+=1;
-    socket.on("leftI", leftOperation)
-  }
-  function leftD(leftOperation: leftSide){
-    if(leftOperation==0){
-      throw new Error("You can't decrease less than 0, on left side")
-    }
-    leftOperation-=1;
-    socket.on("leftD", leftOperation)
-  }
+    socket.on("leftIncreament", ()=>{
+      leftVotes++;
+      io.emit("votes", {rightVotes, leftVotes})
+    })
 
-  socket.on("disconnected", ()=>{
-    socket.emit("Successfully disconnected.")
+    socket.on("leftDecreament", ()=>{
+      if(leftVotes> 0) leftVotes--;
+      io.emit("votes", {rightVotes, leftVotes})
+    })
+
+  socket.on("disconnect", ()=>{
+    console.log("Successfully disconnected.", socket.id)
   })
 })
 
